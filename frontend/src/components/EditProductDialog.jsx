@@ -1,6 +1,7 @@
 import { useProductStore } from '@/store/product';
 import { Button, Dialog, Input, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
+import { toaster } from './ui/toaster';
 
 const EditProductDialog = ({ product, open, onClose }) => {
     const [updatedProduct, setUpdatedProduct] = useState({
@@ -9,20 +10,45 @@ const EditProductDialog = ({ product, open, onClose }) => {
         image: ''
     });
 
-    const { updateProduct } = useProductStore();
+    const { updateProduct, isUpdating } = useProductStore();
+    const [originalProduct, setOriginalProduct] = useState(null);
+
+    const isDirty =
+        originalProduct &&
+        (
+            updatedProduct.name !== originalProduct.name ||
+            updatedProduct.price !== originalProduct.price ||
+            updatedProduct.image !== originalProduct.image
+        );
+
+    const getButtonText = (loading, normal) =>
+        loading ? `${normal}...` : normal;
+
+
 
     useEffect(() => {
         if (product) {
-            setUpdatedProduct({
+            const formatted = ({
                 name: product.name,
                 price: product.price,
                 image: product.image
             });
+            setUpdatedProduct(formatted);
+            setOriginalProduct(formatted);
         }
     }, [product]);
 
     const handleUpdateProduct = async () => {
-        const { success } = await updateProduct(product._id, updatedProduct);
+        const { success, message } = await updateProduct(product._id, updatedProduct);
+
+        toaster.create({
+            title: success ? "Success" : "Error",
+            description: message,
+            type: success ? "success" : "error",
+            duration: 3000,
+            closable: true
+        });
+
         if (success) {
             onClose();
         }
@@ -31,7 +57,9 @@ const EditProductDialog = ({ product, open, onClose }) => {
     if (!product) return null;
 
     return (
-        <Dialog.Root open={open} onOpenChange={(e) => !e.open && onClose()}>
+        <Dialog.Root open={open} onOpenChange={(e) => {
+            if (!e.open && !isUpdating) onClose();
+        }}>
             <Dialog.Backdrop />
 
             <Dialog.Positioner>
@@ -45,6 +73,7 @@ const EditProductDialog = ({ product, open, onClose }) => {
                             <Input
                                 placeholder='Product name'
                                 value={updatedProduct.name}
+                                isDisabled={isUpdating}
                                 onChange={(e) =>
                                     setUpdatedProduct({ ...updatedProduct, name: e.target.value })
                                 }
@@ -53,6 +82,7 @@ const EditProductDialog = ({ product, open, onClose }) => {
                                 placeholder='Price'
                                 type='number'
                                 value={updatedProduct.price}
+                                isDisabled={isUpdating}
                                 onChange={(e) =>
                                     setUpdatedProduct({ ...updatedProduct, price: e.target.value })
                                 }
@@ -60,6 +90,7 @@ const EditProductDialog = ({ product, open, onClose }) => {
                             <Input
                                 placeholder='Image URL'
                                 value={updatedProduct.image}
+                                isDisabled={isUpdating}
                                 onChange={(e) =>
                                     setUpdatedProduct({ ...updatedProduct, image: e.target.value })
                                 }
@@ -68,8 +99,9 @@ const EditProductDialog = ({ product, open, onClose }) => {
                     </Dialog.Body>
 
                     <Dialog.Footer>
-                        <Button colorPalette='blue' mr={3} onClick={handleUpdateProduct}>
-                            Update
+                        <Button loading={isUpdating} mr={3} colorPalette="blue" disabled={!isDirty || isUpdating} opacity={!isDirty ? 0.5 : 1}
+                            cursor={!isDirty ? "not-allowed" : "pointer"} onClick={handleUpdateProduct}>
+                            {getButtonText(isUpdating, "Update")}
                         </Button>
                         <Button variant='ghost' onClick={onClose}>
                             Cancel

@@ -1,13 +1,16 @@
 import { Button, Container, Flex, HStack, Text, Icon } from '@chakra-ui/react'
 import React from 'react'
 import { FiPlusSquare } from 'react-icons/fi'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { useColorMode } from './ui/color-mode'
 import { IoMoon } from 'react-icons/io5'
 import { LuSun } from 'react-icons/lu'
 
 const Navbar = () => {
-    const {colorMode, toggleColorMode} = useColorMode();
+    const location = useLocation();
+    const isCreatePage = location.pathname === '/create';
+
+    const { colorMode, toggleColorMode } = useColorMode();
 
 
     return (
@@ -37,12 +40,14 @@ const Navbar = () => {
                 </Text>
 
                 <HStack spacing={2} alignItems={'center'}>
-                    <Link to={"/create"}>
-                        <Button>
-                            <Icon as={FiPlusSquare} boxSize={6}/>
-                        </Button>
-                    </Link>
-                    <Button onClick={toggleColorMode}>{colorMode === "light" ? <IoMoon/> : <LuSun/>}</Button>
+                    {!isCreatePage && (
+                        <Link to={"/create"}>
+                            <Button>
+                                <Icon as={FiPlusSquare} boxSize={6} />
+                            </Button>
+                        </Link>
+                    )}
+                    <Button onClick={toggleColorMode}>{colorMode === "light" ? <IoMoon /> : <LuSun />}</Button>
                 </HStack>
             </Flex>
         </Container>

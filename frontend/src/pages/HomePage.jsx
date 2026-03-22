@@ -1,12 +1,12 @@
 import ProductCard from '@/components/ProductCard';
 import EditProductDialog from '@/components/EditProductDialog';
 import { useProductStore } from '@/store/product';
-import { Container, SimpleGrid, Text, VStack } from '@chakra-ui/react';
+import { Container, SimpleGrid, Text, VStack, Skeleton } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const HomePage = () => {
-  const { fetchProducts, products } = useProductStore();
+  const { fetchProducts, products, isFetching } = useProductStore();
 
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [open, setOpen] = useState(false);
@@ -29,7 +29,13 @@ const HomePage = () => {
           Current Products 🚀
         </Text>
 
-        {products.length > 0 ? (
+        {isFetching ? (
+          <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={10} w="full">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} height="250px" borderRadius="lg" />
+            ))}
+          </SimpleGrid>
+        ) : products.length > 0 ? (
           <SimpleGrid columns={{ base: 1, md: 2, lg: 3 }} gap={10} w="full">
             {products.map((product) => (
               <ProductCard
@@ -56,7 +62,6 @@ const HomePage = () => {
           </Text>
         )}
 
-        {/* ✅ SINGLE GLOBAL DIALOG */}
         <EditProductDialog
           product={selectedProduct}
           open={open}

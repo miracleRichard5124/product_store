@@ -11,16 +11,22 @@ const CreatePage = () => {
     image: "",
   });
 
-  const {createProduct} = useProductStore()
-  const handleAddProduct = async() => {
-    const {success, message} = await createProduct(newProduct)
+  const { createProduct, isCreating } = useProductStore()
+
+  const getButtonText = (loading, normal) =>
+    loading ? `${normal}...` : normal;
+
+  const handleAddProduct = async () => {
+    if (isCreating) return;
+
+    const { success, message } = await createProduct(newProduct)
     toaster.create({
       title: success ? "Success" : "Error",
       description: message,
       type: success ? "success" : "error",
     })
 
-    if(success){
+    if (success) {
       setNewProduct({
         name: "",
         price: "",
@@ -41,6 +47,7 @@ const CreatePage = () => {
               placeholder='Product Name'
               name='name'
               value={newProduct.name}
+              isDisabled={isCreating}
               onChange={(e) => setNewProduct({ ...newProduct, name: e.target.value })}
             />
 
@@ -48,6 +55,7 @@ const CreatePage = () => {
               placeholder='Price'
               name='price'
               value={newProduct.price}
+              isDisabled={isCreating}
               onChange={(e) => setNewProduct({ ...newProduct, price: Number(e.target.value) })}
             />
 
@@ -55,10 +63,13 @@ const CreatePage = () => {
               placeholder='Image URL'
               name='image'
               value={newProduct.image}
+              isDisabled={isCreating}
               onChange={(e) => setNewProduct({ ...newProduct, image: e.target.value })}
             />
 
-            <Button colorPalette="blue" onClick={handleAddProduct} w='full'>Add Product</Button>
+            <Button loading={isCreating} w="full" colorPalette="blue" onClick={handleAddProduct}>
+              {getButtonText(isCreating, "Add Product")}
+            </Button>
           </VStack>
         </Box>
       </VStack>

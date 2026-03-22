@@ -1,5 +1,5 @@
-import { Box, Heading, HStack, IconButton, Image, Text } from '@chakra-ui/react';
-import React from 'react';
+import { Box, Heading, HStack, IconButton, Image, Text, Button, Dialog } from '@chakra-ui/react';
+import React, { useState } from 'react';
 import { toaster } from './ui/toaster';
 import { useColorModeValue } from './ui/color-mode';
 import { Pencil, Trash2 } from 'lucide-react';
@@ -9,7 +9,9 @@ const ProductCard = ({ product, onEdit }) => {
     const textColor = useColorModeValue("gray.600", "gray.200");
     const bg = useColorModeValue("white", "gray.800");
 
-    const { deleteProduct } = useProductStore();
+    const [openDelete, setOpenDelete] = useState(false);
+
+    const { deleteProduct, isDeleting } = useProductStore();
 
     const handleDeleteProduct = async (pid) => {
         const { success, message } = await deleteProduct(pid);
@@ -54,12 +56,54 @@ const ProductCard = ({ product, onEdit }) => {
                     <IconButton
                         aria-label='Delete Product'
                         colorPalette="red"
-                        onClick={() => handleDeleteProduct(product._id)}
+                        onClick={() => setOpenDelete(true)}
                     >
                         <Trash2 size={18} />
                     </IconButton>
                 </HStack>
             </Box>
+
+            <Dialog.Root open={openDelete} onOpenChange={(e) => setOpenDelete(e.open)}>
+                <Dialog.Backdrop />
+
+                <Dialog.Positioner>
+                    <Dialog.Content>
+                        <Dialog.Header>
+                            <Dialog.Title>Delete Product</Dialog.Title>
+                        </Dialog.Header>
+
+                        <Dialog.Body>
+                            Are you sure you want to delete <b>{product.name}</b>?
+                        </Dialog.Body>
+
+                        <Dialog.Footer>
+                            <Button
+                                colorPalette="red"
+                                onClick={async () => {
+                                    const { success, message } = await deleteProduct(product._id);
+
+                                    toaster.create({
+                                        title: success ? "Success" : "Error",
+                                        description: message,
+                                        type: success ? "success" : "error",
+                                        duration: 3000,
+                                        closable: true
+                                    });
+
+                                    if (success) setOpenDelete(false);
+                                }}
+                                isLoading={isDeleting}
+                            >
+                                Delete
+                            </Button>
+
+                            <Button variant="ghost" onClick={() => setOpenDelete(false)}>
+                                Cancel
+                            </Button>
+                        </Dialog.Footer>
+                    </Dialog.Content>
+                </Dialog.Positioner>
+            </Dialog.Root>
         </Box>
     );
 };
