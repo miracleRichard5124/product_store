@@ -67,7 +67,7 @@ export const useProductStore = create((set) => ({
     },
 
     deleteProduct: async (pid) => {
-        set({ isDeleting: true });
+        set({ deletingId: pid });
 
         try {
             const res = await fetch(`/api/products/${pid}`, {
@@ -81,15 +81,15 @@ export const useProductStore = create((set) => ({
             }
 
             set((state) => ({
-                products: state.products.filter(product => product._id !== pid)
+                products: state.products.filter(p => p._id !== pid)
             }));
 
             return { success: true, message: data.message };
 
         } catch (error) {
-            return { success: false, message: "Delete failed" };
+            return { success: false, message: "Failed to delete product" };
         } finally {
-            set({ isDeleting: false });
+            set({ deletingId: null });
         }
     },
 

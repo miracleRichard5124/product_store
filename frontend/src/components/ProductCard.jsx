@@ -7,21 +7,27 @@ import { useProductStore } from '@/store/product';
 
 const ProductCard = ({ product, onEdit }) => {
     const textColor = useColorModeValue("gray.600", "gray.200");
-    const bg = useColorModeValue("white", "gray.800");
 
     const [openDelete, setOpenDelete] = useState(false);
 
-    const { deleteProduct, isDeleting } = useProductStore();
+    const { deleteProduct, deletingId } = useProductStore();
+    const isDeleting = deletingId === product._id;
 
-    const handleDeleteProduct = async (pid) => {
-        const { success, message } = await deleteProduct(pid);
+    const openDialog = () => setOpenDelete(true);
+    const closeDialog = () => setOpenDelete(false);
+
+    const handleDelete = async () => {
+        const { success, message } = await deleteProduct(product._id);
+
         toaster.create({
             title: success ? "Success" : "Error",
             description: message,
-            type: success ? 'success' : "error",
+            type: success ? "success" : "error",
             duration: 3000,
             closable: true
         });
+
+        if (success) closeDialog();
     };
 
     return (
@@ -30,80 +36,83 @@ const ProductCard = ({ product, onEdit }) => {
             rounded="lg"
             overflow="hidden"
             transition="all 0.3s"
-            _hover={{ transform: "translateY(-6px)", shadow: "xl" }}
-            bg={bg}
+            _hover={{
+                shadow: "2xl",
+                borderColor: "blue.200"
+            }}
         >
-            <Image src={product.image} alt={product.name} h="200px" w="full" objectFit="cover" />
+            <Image
+                src={product.image}
+                alt={product.name}
+                h="200px"
+                w="full"
+                objectFit="cover"
+            />
 
             <Box p={4}>
                 <Heading as="h3" size="md" mb={2}>
                     {product.name}
                 </Heading>
 
-                <Text fontWeight="bold" fontSize='xl' color={textColor} mb={4}>
+                <Text fontWeight="bold" fontSize="xl" color={textColor} mb={4}>
                     $ {product.price}
                 </Text>
 
                 <HStack gap={2}>
                     <IconButton
-                        aria-label='Edit Product'
+                        aria-label="Edit Product"
                         colorPalette="blue"
                         onClick={() => onEdit(product)}
                     >
                         <Pencil size={18} />
                     </IconButton>
 
+                    {/* DELETE TRIGGER */}
                     <IconButton
-                        aria-label='Delete Product'
+                        aria-label="Delete Product"
                         colorPalette="red"
-                        onClick={() => setOpenDelete(true)}
+                        onClick={openDialog}
                     >
                         <Trash2 size={18} />
                     </IconButton>
+
+                    {/* DIALOG */}
+                    <Dialog.Root
+                        open={openDelete}
+                        onOpenChange={(e) => {
+                            if (!e.open) closeDialog();
+                        }}
+                    >
+                        <Dialog.Backdrop />
+
+                        <Dialog.Positioner>
+                            <Dialog.Content>
+                                <Dialog.Header>
+                                    <Dialog.Title>Delete Product</Dialog.Title>
+                                </Dialog.Header>
+
+                                <Dialog.Body>
+                                    Are you sure you want to delete <b>{product.name}</b>?
+                                </Dialog.Body>
+
+                                <Dialog.Footer>
+                                    <Button
+                                        colorPalette="red"
+                                        loading={isDeleting}
+                                        onClick={handleDelete}
+                                    >
+                                        Delete
+                                    </Button>
+
+                                    <Button variant="ghost" onClick={closeDialog}>
+                                        Cancel
+                                    </Button>
+                                </Dialog.Footer>
+                            </Dialog.Content>
+                        </Dialog.Positioner>
+                    </Dialog.Root>
                 </HStack>
             </Box>
-
-            <Dialog.Root open={openDelete} onOpenChange={(e) => setOpenDelete(e.open)}>
-                <Dialog.Backdrop />
-
-                <Dialog.Positioner>
-                    <Dialog.Content>
-                        <Dialog.Header>
-                            <Dialog.Title>Delete Product</Dialog.Title>
-                        </Dialog.Header>
-
-                        <Dialog.Body>
-                            Are you sure you want to delete <b>{product.name}</b>?
-                        </Dialog.Body>
-
-                        <Dialog.Footer>
-                            <Button
-                                colorPalette="red"
-                                onClick={async () => {
-                                    const { success, message } = await deleteProduct(product._id);
-
-                                    toaster.create({
-                                        title: success ? "Success" : "Error",
-                                        description: message,
-                                        type: success ? "success" : "error",
-                                        duration: 3000,
-                                        closable: true
-                                    });
-
-                                    if (success) setOpenDelete(false);
-                                }}
-                                isLoading={isDeleting}
-                            >
-                                Delete
-                            </Button>
-
-                            <Button variant="ghost" onClick={() => setOpenDelete(false)}>
-                                Cancel
-                            </Button>
-                        </Dialog.Footer>
-                    </Dialog.Content>
-                </Dialog.Positioner>
-            </Dialog.Root>
         </Box>
     );
 };
