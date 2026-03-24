@@ -8,7 +8,6 @@ import { LuSun } from 'react-icons/lu'
 
 const Navbar = () => {
     const location = useLocation();
-    const isHomePage = location.pathname === "/";
     const isCreatePage = location.pathname === '/create';
 
     const { colorMode, toggleColorMode } = useColorMode();
