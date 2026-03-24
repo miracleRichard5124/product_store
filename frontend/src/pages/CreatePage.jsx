@@ -37,9 +37,9 @@ const CreatePage = () => {
 
 
   return (
-    <Container maxW={"lg"}>
-      <VStack gap={8}>
-        <Heading as={"h1"} size={"2xl"} textAlign={"center"} mb={8}>Create A New Product</Heading>
+    <Container maxW={"lg"} py={12}>
+      <VStack gap={2}>
+        <Heading as={"h1"} fontSize={"20px"} textAlign={"center"} mb={8}>Create A New Product</Heading>
 
         <Box w={"full"} bg={useColorModeValue("white", "gray.800")} p={6} mx={"auto"} rounded={"lg"} shadow={"md"}>
           <VStack gap={4}>

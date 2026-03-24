@@ -5,6 +5,7 @@ import CreatePage from "./pages/CreatePage.jsx"
 import Navbar from "./components/Navbar.jsx"
 import { useColorModeValue } from "./components/ui/color-mode.jsx"
 import { Toaster } from "./components/ui/toaster.jsx"
+import './App.css';
 
 function App() {
 
